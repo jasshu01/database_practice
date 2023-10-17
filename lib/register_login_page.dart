@@ -11,15 +11,54 @@ class RegisterLoginPage extends StatefulWidget {
 class _RegisterLoginPageState extends State<RegisterLoginPage> {
   @override
   Widget build(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
     TextEditingController usernameController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
 
-    bool validateEmailString(String email) {
-      return true;
+    String? validateEmail(String? email) {
+      if (email!.isEmpty) {
+        return 'Please enter your email.';
+      }
+
+      // You can use a regular expression to validate the email format.
+      final emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$');
+      if (!emailRegex.hasMatch(email!)) {
+        return 'Please enter a valid email address.';
+      }
+
+      return null;
     }
 
-    bool validatePasswordString(String password) {
-      return true;
+    String? validatePassword(String? password) {
+      if (password!.isEmpty) {
+        return 'Please enter your password.';
+      }
+
+      if (password.length < 6) {
+        return 'Password must be at least 6 characters.';
+      }
+
+      return null;
+    }
+
+    void submitForm() {
+      if (_formKey.currentState!.validate()) {
+        Map<String, dynamic> newItem = {
+          'email': usernameController.text,
+          'password': passwordController.text,
+        };
+
+        addUser(newItem, context);
+        setState(() {
+          // Refresh the UI.
+        });
+
+        Navigator.of(context).pop(); // Close the dialog.
+        // Reset the form after submission if needed.
+        _formKey.currentState!.reset();
+
+        return;
+      }
     }
 
     void showRegisterUserDialog(BuildContext context) {
@@ -28,28 +67,33 @@ class _RegisterLoginPageState extends State<RegisterLoginPage> {
         builder: (context) {
           return AlertDialog(
             title: Text('Register User'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextField(
-                  controller: usernameController,
-                  keyboardType: TextInputType.emailAddress,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    hintText: "Enter your email",
-                    icon: Icon(Icons.email),
+            content: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextFormField(
+                    controller: usernameController,
+                    keyboardType: TextInputType.emailAddress,
+                    autocorrect: false,
+                    decoration: InputDecoration(
+                      hintText: "Enter your email",
+                      icon: Icon(Icons.email),
+                    ),
+                    validator: validateEmail,
                   ),
-                ),
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    hintText: "Enter your password",
-                    icon: Icon(Icons.key),
+                  TextFormField(
+                    controller: passwordController,
+                    obscureText: true,
+                    autocorrect: false,
+                    validator: validatePassword,
+                    decoration: InputDecoration(
+                      hintText: "Enter your password",
+                      icon: Icon(Icons.key),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             actions: <Widget>[
               TextButton(
@@ -60,18 +104,19 @@ class _RegisterLoginPageState extends State<RegisterLoginPage> {
               ),
               TextButton(
                 onPressed: () {
+                  submitForm();
                   // Save the item to the database and update the UI.
-                  Map<String, dynamic> newItem = {
-                    'email': usernameController.text,
-                    'password': passwordController.text,
-                  };
+                  // Map<String, dynamic> newItem = {
+                  //   'email': usernameController.text,
+                  //   'password': passwordController.text,
+                  // };
 
-                  addUser(newItem);
-                  setState(() {
-                    // Refresh the UI.
-                  });
-
-                  Navigator.of(context).pop(); // Close the dialog.
+                  // addUser(newItem);
+                  // setState(() {
+                  //   // Refresh the UI.
+                  // });
+                  //
+                  // Navigator.of(context).pop(); // Close the dialog.
                 },
                 child: Text('Register'),
               ),
@@ -166,7 +211,23 @@ class _RegisterLoginPageState extends State<RegisterLoginPage> {
   }
 }
 
-Future<void> addUser(Map<String, dynamic> newItem) async {
+Future<void> addUser(Map<String, dynamic> newItem, BuildContext context) async {
+  if (await dataBaseHelper.findwithEmail(newItem['email'])) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Email Already exists"),
+            content: TextButton(
+              child: Text("Ok"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          );
+        });
+    return;
+  }
   await dataBaseHelper.addUser(newItem);
 }
 

@@ -77,11 +77,26 @@ class DataBaseHelper {
   Future<bool> findUser(Map<String, dynamic> user) async {
     await open(); // Ensure that the database is open.
 
-
     List<Map<String, dynamic>> results = await _database!.query(
       'users',
       where: 'email = ? AND password = ?',
       whereArgs: [user['email'], user['password']],
+    );
+
+    if (results.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<bool> findwithEmail(String email) async {
+    await open(); // Ensure that the database is open.
+
+    List<Map<String, dynamic>> results = await _database!.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
     );
 
     if (results.isNotEmpty) {
