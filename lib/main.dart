@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.done) {
             final userExists = snapshot.data;
 
-            if (userExists!=null && userExists) {
+            if (userExists != null && userExists) {
               // User details found, navigate to HomePage.
               return MyHomePage();
             } else {
@@ -235,6 +235,20 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         },
       ),
+      endDrawer: Container(
+          child: ElevatedButton(
+        onPressed: () {
+          logout();
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
+            return RegisterLoginPage();
+          }));
+          setState(() {});
+        },
+        child: Text(
+          "Logout",
+          style: TextStyle(color: Colors.black, fontSize: 30),
+        ),
+      )),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           showAddItemDialog(context);
@@ -286,10 +300,14 @@ Future<bool> loadUserDetails() async {
   final password = prefs.getString('password');
 
   if (email != null && password != null) {
-    // User details are available for auto-login or display.
-    // You can use them here or pass them to your authentication logic.
     print("Found in shared prefs");
     return true;
   }
   return false;
+}
+
+Future<void> logout() async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.remove('email');
+  prefs.remove('password');
 }
