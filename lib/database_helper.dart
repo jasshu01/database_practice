@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 class DataBaseHelper {
   Database? _database;
 
+
   Future<void> open() async {
     try {
       if (_database == null) {
@@ -14,11 +15,10 @@ class DataBaseHelper {
               'CREATE TABLE items(id INTEGER PRIMARY KEY, name TEXT, description TEXT)',
             );
             db.execute(
-              'CREATE TABLE users(id INTEGER PRIMARY KEY, email TEXT PRIMARY KEY, password TEXT)',
+              'CREATE TABLE users(id INTEGER PRIMARY KEY, email TEXT , password TEXT)',
             );
-            return;
           },
-          version: 3,
+          version: 1,
         );
       }
     } catch (e) {
@@ -63,16 +63,16 @@ class DataBaseHelper {
     }
   }
 
-  Future<int> updateUser(Map<String, dynamic> data) async {
-    await open();
-    return await _database!
-        .update('users', data, where: 'id = ?', whereArgs: [data['id']]);
-  }
-
-  Future<int> deleteUser(int id) async {
-    await open();
-    return await _database!.delete('users', where: 'id = ?', whereArgs: [id]);
-  }
+  // Future<int> updateUser(Map<String, dynamic> data) async {
+  //   await open();
+  //   return await _database!
+  //       .update('users', data, where: 'id = ?', whereArgs: [data['id']]);
+  // }
+  //
+  // Future<int> deleteUser(int id) async {
+  //   await open();
+  //   return await _database!.delete('users', where: 'id = ?', whereArgs: [id]);
+  // }
 
   Future<bool> findUser(Map<String, dynamic> user) async {
     await open(); // Ensure that the database is open.

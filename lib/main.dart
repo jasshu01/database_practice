@@ -1,6 +1,7 @@
 import 'package:database_practice/database_helper.dart';
 import 'package:database_practice/register_login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,11 +20,28 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),
-      home: RegisterLoginPage(),
+      home: FutureBuilder<bool>(
+        future: loadUserDetails(), // Implement this function.
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            final userExists = snapshot.data;
+
+            if (userExists!=null && userExists) {
+              // User details found, navigate to HomePage.
+              return MyHomePage();
+            } else {
+              // User details not found, navigate to LoginPage.
+              return RegisterLoginPage();
+            }
+          } else {
+            // While waiting for the future to complete, you can display a loading indicator.
+            return CircularProgressIndicator();
+          }
+        },
+      ),
     );
   }
 }
-
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -144,7 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () {
                   // Save the item to the database and update the UI.
                   Map<String, dynamic> newItem = {
-                    'id':item['id'],
+                    'id': item['id'],
                     'name': nameController.text,
                     'description': descriptionController.text,
                   };
@@ -260,4 +278,18 @@ Future<void> delete(int id) async {
 
 void update(Map<String, dynamic> updatedItem) async {
   await dataBaseHelper.update(updatedItem);
+}
+
+Future<bool> loadUserDetails() async {
+  final prefs = await SharedPreferences.getInstance();
+  final email = prefs.getString('email');
+  final password = prefs.getString('password');
+
+  if (email != null && password != null) {
+    // User details are available for auto-login or display.
+    // You can use them here or pass them to your authentication logic.
+    print("Found in shared prefs");
+    return true;
+  }
+  return false;
 }

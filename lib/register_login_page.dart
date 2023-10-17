@@ -1,8 +1,12 @@
+import 'package:database_practice/database_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'main.dart';
 
+
+DataBaseHelper dataBaseHelper=DataBaseHelper();
 class RegisterLoginPage extends StatefulWidget {
   @override
   State<RegisterLoginPage> createState() => _RegisterLoginPageState();
@@ -60,6 +64,8 @@ class _RegisterLoginPageState extends State<RegisterLoginPage> {
         return;
       }
     }
+
+
 
     void showRegisterUserDialog(BuildContext context) {
       showDialog(
@@ -170,6 +176,9 @@ class _RegisterLoginPageState extends State<RegisterLoginPage> {
 
                     if (await findUser(user)) {
                       print("found user");
+
+                      saveUserDetails(usernameController.text,passwordController.text);
+
                       Navigator.pushReplacement(context,
                           MaterialPageRoute(builder: (BuildContext context) {
                         return MyHomePage();
@@ -233,4 +242,13 @@ Future<void> addUser(Map<String, dynamic> newItem, BuildContext context) async {
 
 Future<bool> findUser(Map<String, dynamic> newItem) async {
   return await dataBaseHelper.findUser(newItem);
+}
+
+Future<void> saveUserDetails(String email, String password) async {
+  final prefs = await SharedPreferences.getInstance();
+
+  // Save user details securely.
+  await prefs.setString('email', email);
+  await prefs.setString('password', password);
+  print("saving in shared prefs");
 }
