@@ -63,11 +63,11 @@ class DataBaseHelper {
     }
   }
 
-  // Future<int> updateUser(Map<String, dynamic> data) async {
-  //   await open();
-  //   return await _database!
-  //       .update('users', data, where: 'id = ?', whereArgs: [data['id']]);
-  // }
+  Future<int> updateUser(Map<String, dynamic> data) async {
+    await open();
+    return await _database!
+        .update('users', data, where: 'id = ?', whereArgs: [data['id']]);
+  }
   //
   // Future<int> deleteUser(int id) async {
   //   await open();
@@ -103,6 +103,22 @@ class DataBaseHelper {
       return true;
     } else {
       return false;
+    }
+  }
+
+  Future<int> findIDwithEmail(String email) async {
+    await open(); // Ensure that the database is open.
+
+    List<Map<String, dynamic>> results = await _database!.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+
+    if (results.isNotEmpty) {
+      return results[0]['id'];
+    } else {
+      return -1;
     }
   }
 }

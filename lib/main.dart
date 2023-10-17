@@ -51,27 +51,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    // delete(2);
-    Map<String, dynamic> newItem = {
-      'name': 'Jasshu',
-      'description': 'MTS-1',
-    };
-
-    // insert(newItem);
-    // printAll();
-    // Map<String, dynamic>? item=getWithId(2);
-    // print(item.toString());
-    // item?['description']="MTS-1/SDE-1";
-
-    Map<String, dynamic> updatedItem = {
-      'id': 1,
-      'name': 'Jasshu',
-      'description': 'MTS-1/SDE-1',
-    };
-
-    // update(updatedItem);
-    // printAll();
-
     Future<List<Map<String, dynamic>>> fetchAllItems() async {
       // Replace with your actual database query to fetch all items.
       // The returned value should be a List<Map<String, dynamic>>.
@@ -80,6 +59,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     TextEditingController nameController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
+    TextEditingController oldPasswordController = TextEditingController();
+    TextEditingController newPasswordController = TextEditingController();
 
     void showAddItemDialog(BuildContext context) {
       showDialog(
@@ -182,6 +163,56 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
 
+    void showChangePasswordDialog(BuildContext context) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Change Password'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextField(
+                  controller: oldPasswordController,
+                  obscureText: true,
+                  autocorrect: false,
+                  decoration: InputDecoration(labelText: 'Old Password'),
+                ),
+                TextField(
+                  controller: newPasswordController,
+                  obscureText: true,
+                  autocorrect: false,
+                  decoration: InputDecoration(labelText: 'New Password'),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog.
+                },
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Save the item to the database and update the UI.
+
+                  updatePassword(context, oldPasswordController.text,
+                      newPasswordController.text);
+                  setState(() {
+                    // Refresh the UI.
+                  });
+
+                  Navigator.of(context).pop(); // Close the dialog.
+                },
+                child: Text('Update'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -236,19 +267,35 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       endDrawer: Container(
-          child: ElevatedButton(
-        onPressed: () {
-          logout();
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
-            return RegisterLoginPage();
-          }));
-          setState(() {});
-        },
-        child: Text(
-          "Logout",
-          style: TextStyle(color: Colors.black, fontSize: 30),
-        ),
-      )),
+          height: 200,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                onPressed: () {
+                  logout();
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (BuildContext context) {
+                    return RegisterLoginPage();
+                  }));
+                  setState(() {});
+                },
+                child: Text(
+                  "Logout",
+                  style: TextStyle(color: Colors.black, fontSize: 30),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  showChangePasswordDialog(context);
+                },
+                child: Text(
+                  "Change Password",
+                  style: TextStyle(color: Colors.black, fontSize: 30),
+                ),
+              ),
+            ],
+          )),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           showAddItemDialog(context);
@@ -310,4 +357,72 @@ Future<void> logout() async {
   final prefs = await SharedPreferences.getInstance();
   prefs.remove('email');
   prefs.remove('password');
+}
+
+Future<void> updatePassword(
+    BuildContext context, String oldPassword, String newPassword) async {
+  final prefs = await SharedPreferences.getInstance();
+  String? email = await prefs.get('email').toString();
+  String? password = await prefs.get('password').toString();
+
+  if (newPassword.length < 6) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("NewPassword should contain atleast 6 characters!"),
+            content: TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Ok"),
+            ),
+          );
+        });
+    return;
+  }
+
+  if (password == oldPassword) {
+    int id = await dataBaseHelper.findIDwithEmail(email);
+    if (id != -1) {
+      print("id is $id");
+      Map<String, dynamic> updatedUser = {
+        'id': id,
+        'email': email,
+        'password': newPassword
+      };
+      dataBaseHelper.updateUser(updatedUser);
+      return;
+    } 
+    else {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("User Not Found!"),
+              content: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("Ok"),
+              ),
+            );
+          });
+    }
+  } else 
+  {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Incorrect OldPassword!"),
+            content: TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Ok"),
+            ),
+          );
+        });
+  }
 }
