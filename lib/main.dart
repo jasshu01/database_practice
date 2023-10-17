@@ -1,4 +1,5 @@
 import 'package:database_practice/database_helper.dart';
+import 'package:database_practice/register_login_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,10 +19,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),
-      home: MyHomePage(),
+      home: RegisterLoginPage(),
     );
   }
 }
+
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -187,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
               itemBuilder: (context, index) {
                 final item = snapshot.data![index];
                 return ListTile(
-                  leading: Text("${index + 1}"),
+                  leading: Text("${index + 1},${item['id']}"),
                   title: Text(item['name']),
                   subtitle: Text(item['description']),
                   trailing: Container(
