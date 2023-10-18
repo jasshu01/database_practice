@@ -43,6 +43,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+bool? deleteWithoutConfirmation = false;
+
 class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -213,6 +215,48 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
 
+    void confirmDeletionOfItems(BuildContext context, int id) {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(
+                "Are you Sure? you want to delete the item?",
+                style: TextStyle(fontSize: 13),
+              ),
+              content: Container(
+                  height: 100,
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          StatefulBuilder(builder: (BuildContext context,
+                              void Function(void Function()) setState) {
+                            return Checkbox(
+                              value: deleteWithoutConfirmation,
+                              onChanged: (bool? value) {
+                                deleteWithoutConfirmation = value;
+                                print(deleteWithoutConfirmation);
+                                setState(() {});
+                              },
+                            );
+                          }),
+                          Text("Always Delete without confirmation")
+                        ],
+                      ),
+                      TextButton(
+                          onPressed: () {
+                            delete(id);
+                            Navigator.of(context).pop();
+                            setState(() {});
+                          },
+                          child: Text("Delete"))
+                    ],
+                  )),
+            );
+          });
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -248,8 +292,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: [
                         InkWell(
                             onTap: () {
-                              delete(item['id']);
+                              if (deleteWithoutConfirmation!) {
+                                delete(item['id']);
+                              } else {
+                                confirmDeletionOfItems(context, item['id']);
+                              }
                               setState(() {});
+                            },
+                            onLongPress: () {
+                              confirmDeletionOfItems(context, item['id']);
                             },
                             child: Icon(Icons.delete)),
                         InkWell(
@@ -393,8 +444,7 @@ Future<void> updatePassword(
       };
       dataBaseHelper.updateUser(updatedUser);
       return;
-    } 
-    else {
+    } else {
       showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -409,8 +459,7 @@ Future<void> updatePassword(
             );
           });
     }
-  } else 
-  {
+  } else {
     showDialog(
         context: context,
         builder: (BuildContext context) {
