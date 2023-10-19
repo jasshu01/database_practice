@@ -1,4 +1,5 @@
 import 'package:database_practice/database_helper.dart';
+import 'package:database_practice/item_detail_page.dart';
 import 'package:database_practice/register_login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -281,34 +282,42 @@ class _MyHomePageState extends State<MyHomePage> {
               separatorBuilder: (context, index) => Divider(),
               itemBuilder: (context, index) {
                 final item = snapshot.data![index];
-                return ListTile(
-                  leading: Text("${index + 1},${item['id']}"),
-                  title: Text(item['name']),
-                  subtitle: Text(item['description']),
-                  trailing: Container(
-                    width: 50,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        InkWell(
-                            onTap: () {
-                              if (deleteWithoutConfirmation!) {
-                                delete(item['id']);
-                              } else {
+                return InkWell(
+                  onTap: (){
+
+                      Navigator.push(context,MaterialPageRoute(builder: (context){
+                        return ItemDetailsPage(data: item);
+                      }));
+                  },
+                  child: ListTile(
+                    leading: Text("${index + 1},${item['id']}"),
+                    title: Text(item['name']),
+                    subtitle: Text(item['description']),
+                    trailing: Container(
+                      width: 50,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          InkWell(
+                              onTap: () {
+                                if (deleteWithoutConfirmation!) {
+                                  delete(item['id']);
+                                } else {
+                                  confirmDeletionOfItems(context, item['id']);
+                                }
+                                setState(() {});
+                              },
+                              onLongPress: () {
                                 confirmDeletionOfItems(context, item['id']);
-                              }
-                              setState(() {});
-                            },
-                            onLongPress: () {
-                              confirmDeletionOfItems(context, item['id']);
-                            },
-                            child: Icon(Icons.delete)),
-                        InkWell(
-                            onTap: () {
-                              showUpdateItemDialog(context, item);
-                            },
-                            child: Icon(Icons.edit)),
-                      ],
+                              },
+                              child: Icon(Icons.delete)),
+                          InkWell(
+                              onTap: () {
+                                showUpdateItemDialog(context, item);
+                              },
+                              child: Icon(Icons.edit)),
+                        ],
+                      ),
                     ),
                   ),
                 );
