@@ -92,11 +92,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Text('Cancel'),
               ),
               TextButton(
-                onPressed: () {
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  final email = prefs.getString('email');
                   // Save the item to the database and update the UI.
                   Map<String, dynamic> newItem = {
                     'name': nameController.text,
                     'description': descriptionController.text,
+                    'username': email
                   };
 
                   insert(newItem);

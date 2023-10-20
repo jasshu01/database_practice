@@ -1,9 +1,9 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class DataBaseHelper {
   Database? _database;
-
 
   Future<void> open() async {
     try {
@@ -12,7 +12,7 @@ class DataBaseHelper {
           join(await getDatabasesPath(), 'my_database.db'),
           onCreate: (db, version) {
             db.execute(
-              'CREATE TABLE items(id INTEGER PRIMARY KEY, name TEXT, description TEXT)',
+              'CREATE TABLE items(id INTEGER PRIMARY KEY, name TEXT, description TEXT,username Text)',
             );
             db.execute(
               'CREATE TABLE users(id INTEGER PRIMARY KEY, email TEXT , password TEXT)',
@@ -33,7 +33,10 @@ class DataBaseHelper {
 
   Future<List<Map<String, dynamic>>> queryAll() async {
     await open();
-    return await _database!.query('items');
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
+    return await _database!
+        .query('items', where: 'username=?', whereArgs: [email]);
   }
 
   Future<int> update(Map<String, dynamic> data) async {
@@ -68,6 +71,7 @@ class DataBaseHelper {
     return await _database!
         .update('users', data, where: 'id = ?', whereArgs: [data['id']]);
   }
+
   //
   // Future<int> deleteUser(int id) async {
   //   await open();
