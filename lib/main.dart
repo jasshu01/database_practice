@@ -283,11 +283,13 @@ class _MyHomePageState extends State<MyHomePage> {
               itemBuilder: (context, index) {
                 final item = snapshot.data![index];
                 return InkWell(
-                  onTap: (){
+                  onTap: () async {
 
-                      Navigator.push(context,MaterialPageRoute(builder: (context){
+                    final result=  await Navigator.push(context,MaterialPageRoute(builder: (context){
                         return ItemDetailsPage(data: item);
                       }));
+
+                    print(result);
                   },
                   child: ListTile(
                     leading: Text("${index + 1},${item['id']}"),
